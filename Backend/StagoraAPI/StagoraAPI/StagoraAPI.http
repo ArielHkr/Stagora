@@ -1,0 +1,6 @@
+@StagoraAPI_HostAddress = http://localhost:5226
+
+GET {{StagoraAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
