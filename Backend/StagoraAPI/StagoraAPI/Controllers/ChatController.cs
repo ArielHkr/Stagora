@@ -1,22 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StagoraAPI.DTOs;
-
+using StagoraAPI.Services;                                
 namespace StagoraAPI.Controllers
 {
     /// <summary>
-    /// Point d'entrée HTTP du chatbot.
-    /// Version « écho » : renvoie le dernier message reçu, sans appeler l'IA.
-    /// Elle sera reliée à BotService au point 1.5.
+    /// Point d'entrée HTTP du chatbot.                     
+    /// Reçoit la conversation et la transmet à BotService.
     /// </summary>
     [Route("api/chat")]
     [ApiController]
     public class ChatController : ControllerBase
     {
+        private readonly BotService _botService;            
+
+        public ChatController(BotService botService)        
+        {
+            _botService = botService;
+        }
+
         /// <summary>
         /// Reçoit la conversation et renvoie la réponse du bot.
         /// </summary>
         [HttpPost]
-        public ActionResult<ChatReponse> Post(ChatRequete requete)
+        public async Task<ActionResult<ChatReponse>> Post(ChatRequete requete, CancellationToken ct)
         {
             // 1. Valider : une conversation vide n'a pas de question à traiter.
             if (requete.Messages.Count == 0)
@@ -24,12 +30,10 @@ namespace StagoraAPI.Controllers
                 return BadRequest("La conversation est vide.");
             }
 
-            // 2. Récupérer le dernier message (^1 = le premier en partant de la fin).
-            MessageDto dernierMessage = requete.Messages[^1];
+            // 2. Demander la réponse au bot.               
+            string texte = await _botService.RepondreAsync(requete.Messages, ct);
 
-            // 3. Renvoyer la réponse (200 OK + JSON).
-            //    TODO (1.5) : remplacer l'écho par l'appel à BotService.
-            return Ok(new ChatReponse { Reponse = $"Écho : {dernierMessage.Contenu}" });
+            return Ok(new ChatReponse { Reponse = texte });
         }
     }
 }

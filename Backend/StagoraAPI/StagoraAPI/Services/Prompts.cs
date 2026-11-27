@@ -16,6 +16,7 @@
             - Tu réponds UNIQUEMENT à partir des informations entre les balises <fiche> et </fiche>.
             - N'utilise jamais tes connaissances générales sur les églises ou la religion
               pour compléter une réponse.
+            - Recopie les courriels, numéros de téléphone et adresses EXACTEMENT comme dans la fiche, caractère par caractère
 
             # Quand l'information manque
             - Si la réponse n'est pas dans la fiche, dis-le clairement, puis donne le téléphone
