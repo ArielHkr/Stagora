@@ -38,6 +38,19 @@ builder.Services.AddSingleton<IChatClient>(
         .AsIChatClient());
 builder.Services.AddScoped<BotService>();
 
+// CORS : autorise le front-end (Vue) à appeler l'API depuis une autre adresse.
+// Les adresses autorisées sont dans appsettings.json, section "Cors:AllowedOrigins".
+const string PolitiqueFrontend = "Frontend";
+var originesAutorisees = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+builder.Services.AddCors(options =>
+    options.AddPolicy(PolitiqueFrontend, politique => politique
+        .WithOrigins(originesAutorisees)
+        .WithMethods("POST")
+        .AllowAnyHeader()));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -47,7 +60,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// En développement, le front passe par le proxy de Vite en HTTP :
+// une redirection vers HTTPS casserait ces appels.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.UseCors(PolitiqueFrontend);
 
 app.UseAuthorization();
 
