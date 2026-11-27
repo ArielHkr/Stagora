@@ -16,6 +16,10 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_PROXY_TARGET || 'http://localhost:5226',
           changeOrigin: true,
         },
+        '/health': {
+          target: env.VITE_API_PROXY_TARGET || 'http://localhost:5226',
+          changeOrigin: true,
+        },
       },
     },
   }

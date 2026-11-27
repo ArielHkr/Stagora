@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import AppFooter from './components/layout/AppFooter.vue'
 import AppHeader from './components/layout/AppHeader.vue'
 import HeroSection from './components/home/HeroSection.vue'
 import ChatWidget from './components/chat/ChatWidget.vue'
+import { reveillerApi } from './services/chatApi'
+
+// Dès l'ouverture de la page, on réveille l'API (en veille sur l'offre gratuite).
+onMounted(reveillerApi)
 
 const chatOuvert = ref(false)
 const chat = useTemplateRef<InstanceType<typeof ChatWidget>>('chat')

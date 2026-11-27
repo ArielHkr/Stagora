@@ -11,6 +11,8 @@ const MESSAGE_ACCUEIL =
   `Bonjour ! Je suis l'assistant de l'${NOM_EGLISE}. ` +
   "Posez-moi vos questions sur les horaires, l'accès ou nos activités."
 
+const DELAI_AVANT_MESSAGE_REVEIL_MS = 5000
+
 function creerAccueil(): MessageAffiche {
   return { id: 0, role: 'assistant', contenu: MESSAGE_ACCUEIL, local: true }
 }
@@ -19,6 +21,8 @@ export function useChat() {
   const messages = ref<MessageAffiche[]>([creerAccueil()])
   const enCours = ref(false)
   const erreur = ref<string | null>(null)
+  /** true si la réponse tarde : l'API est sans doute en train de se réveiller. */
+  const lent = ref(false)
 
   let prochainId = 1
   let controleur: AbortController | null = null
@@ -34,6 +38,8 @@ export function useChat() {
     enCours.value = true
     erreur.value = null
     controleur = new AbortController()
+    // Après 5 s sans réponse, on prévient le visiteur que l'API se réveille.
+    const minuterie = setTimeout(() => (lent.value = true), DELAI_AVANT_MESSAGE_REVEIL_MS)
 
     try {
       const texte = await envoyerConversation({ messages: historiquePourApi() }, controleur.signal)
@@ -42,6 +48,8 @@ export function useChat() {
       if (e instanceof DOMException && e.name === 'AbortError') return
       erreur.value = e instanceof ChatApiError ? e.message : 'Une erreur inattendue est survenue.'
     } finally {
+      clearTimeout(minuterie)
+      lent.value = false
       enCours.value = false
       controleur = null
     }
@@ -71,5 +79,5 @@ export function useChat() {
     enCours.value = false
   }
 
-  return { messages, enCours, erreur, envoyer, reessayer, reinitialiser }
+  return { messages, enCours, lent, erreur, envoyer, reessayer, reinitialiser }
 }
