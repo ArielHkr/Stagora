@@ -1,0 +1,30 @@
+# Blueprint Render : décrit les deux services à créer à partir de ce dépôt.
+# Render > New > Blueprint > choisir ce dépôt. Voir DEPLOIEMENT.md.
+
+services:
+  # API ASP.NET (Docker), offre gratuite : se met en veille après 15 min sans visite.
+  - type: web
+    name: stagora-api
+    runtime: docker
+    plan: free
+    dockerContext: ./Backend/StagoraAPI/StagoraAPI
+    dockerfilePath: ./Backend/StagoraAPI/StagoraAPI/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: Groq__ApiKey
+        sync: false # saisie dans le tableau de bord, jamais dans le dépôt
+      - key: Cors__AllowedOrigins__0
+        sync: false # adresse du site, ex. https://stagora-site.onrender.com
+
+  # Front Vue (site statique), gratuit et sans mise en veille.
+  - type: web
+    name: stagora-site
+    runtime: static
+    rootDir: Frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false # adresse de l'API, ex. https://stagora-api.onrender.com

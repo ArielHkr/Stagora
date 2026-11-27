@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using StagoraAPI.DTOs;
 using StagoraAPI.Services;                                
 namespace StagoraAPI.Controllers
@@ -9,6 +10,7 @@ namespace StagoraAPI.Controllers
     /// </summary>
     [Route("api/chat")]
     [ApiController]
+    [EnableRateLimiting("Chat")] // Politique définie dans Program.cs (PolitiqueChat)
     public class ChatController : ControllerBase
     {
         private readonly BotService _botService;            

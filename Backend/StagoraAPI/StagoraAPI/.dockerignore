@@ -1,0 +1,7 @@
+# Fichiers exclus de l'image Docker : sorties de compilation et réglages locaux.
+bin/
+obj/
+.vs/
+*.user
+Dockerfile
+.dockerignore
