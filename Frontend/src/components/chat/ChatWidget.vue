@@ -7,7 +7,7 @@ import ChatMessageList from './ChatMessageList.vue'
 // v-model:ouvert : le parent (App.vue) peut ouvrir ou fermer la fenêtre.
 const ouvert = defineModel<boolean>('ouvert', { default: false })
 
-const { messages, enCours, erreur, envoyer, reessayer, reinitialiser } = useChat()
+const { messages, enCours, lent, erreur, envoyer, reessayer, reinitialiser } = useChat()
 
 const saisie = useTemplateRef<InstanceType<typeof ChatInput>>('saisie')
 const lanceur = useTemplateRef<HTMLButtonElement>('lanceur')
@@ -75,7 +75,7 @@ defineExpose({ poserQuestion })
           </div>
         </header>
 
-        <ChatMessageList :messages="messages" :en-cours="enCours" />
+        <ChatMessageList :messages="messages" :en-cours="enCours" :lent="lent" />
 
         <div v-if="erreur" class="erreur" role="alert">
           <span>{{ erreur }}</span>

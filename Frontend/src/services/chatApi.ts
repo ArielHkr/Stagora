@@ -15,6 +15,15 @@ export class ChatApiError extends Error {
   }
 }
 
+/**
+ * Réveille l'API si elle est en veille (offre gratuite de Render).
+ * Appelée à l'ouverture de la page : l'API démarre pendant que le visiteur lit.
+ * Le résultat est ignoré, une erreur ici n'a aucune conséquence.
+ */
+export function reveillerApi(): void {
+  fetch(`${API_BASE_URL}/health`).catch(() => {})
+}
+
 function messagePourStatut(status: number): string {
   if (status === 400) return "Votre message n'a pas pu être traité. Reformulez-le et réessayez."
   if (status === 429) return 'Beaucoup de demandes en ce moment. Patientez quelques secondes puis réessayez.'

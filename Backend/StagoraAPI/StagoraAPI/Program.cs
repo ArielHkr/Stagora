@@ -51,7 +51,7 @@ var originesAutorisees = builder.Configuration
 builder.Services.AddCors(options =>
     options.AddPolicy(PolitiqueFrontend, politique => politique
         .WithOrigins(originesAutorisees)
-        .WithMethods("POST")
+        .WithMethods("GET", "POST") // GET : /health, appelé par le front pour réveiller l'API
         .AllowAnyHeader()));
 
 // Limite de requêtes : protège le quota Groq contre l'abus et le spam.

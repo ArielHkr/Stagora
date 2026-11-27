@@ -7,6 +7,7 @@ import TypingIndicator from './TypingIndicator.vue'
 const props = defineProps<{
   messages: MessageAffiche[]
   enCours: boolean
+  lent: boolean
 }>()
 
 const liste = useTemplateRef<HTMLElement>('liste')
@@ -17,14 +18,14 @@ async function defilerEnBas() {
 }
 
 // Nouveau message ou indicateur « écrit… » : on descend en bas de la conversation.
-watch(() => [props.messages.length, props.enCours], defilerEnBas)
+watch(() => [props.messages.length, props.enCours, props.lent], defilerEnBas)
 onMounted(defilerEnBas)
 </script>
 
 <template>
   <div ref="liste" class="liste" role="log" aria-label="Conversation">
     <ChatMessageItem v-for="message in messages" :key="message.id" :message="message" />
-    <TypingIndicator v-if="enCours" />
+    <TypingIndicator v-if="enCours" :lent="lent" />
   </div>
 </template>
 
