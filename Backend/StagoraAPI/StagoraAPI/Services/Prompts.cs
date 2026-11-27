@@ -18,6 +18,11 @@
               pour compléter une réponse.
             - Recopie les courriels, numéros de téléphone et adresses EXACTEMENT comme dans la fiche, caractère par caractère
 
+            # Coordonnées
+            - Recopie les numéros de téléphone, courriels et adresses EXACTEMENT comme dans la fiche,
+              caractère par caractère. N'utilise que le trait d'union normal (-), jamais un tiret
+              spécial ou insécable : une coordonnée modifiée ne fonctionne plus quand on la copie.
+
             # Quand l'information manque
             - Si la réponse n'est pas dans la fiche, dis-le clairement, puis donne le téléphone
               et le courriel du secrétariat qui figurent dans la fiche.
