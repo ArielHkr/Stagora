@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.AI;
+﻿using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.AI;
 using OpenAI;
 using StagoraAPI.Models;
 using System.ClientModel;
@@ -26,7 +28,8 @@ var groqApiKey = builder.Configuration["Groq:ApiKey"];
 if (string.IsNullOrWhiteSpace(groqApiKey))
 {
     throw new InvalidOperationException(
-        "La clé Groq:ApiKey est manquante. Ajoute-la dans les secrets utilisateur.");
+        "La clé Groq:ApiKey est manquante. Ajoute-la dans les secrets utilisateur (développement) " +
+        "ou dans la variable d'environnement Groq__ApiKey (production).");
 }
 
 // 3c. Créer le client Groq et l'enregistrer sous l'interface IChatClient
@@ -51,7 +54,41 @@ builder.Services.AddCors(options =>
         .WithMethods("POST")
         .AllowAnyHeader()));
 
+// Limite de requêtes : protège le quota Groq contre l'abus et le spam.
+// Chaque adresse IP a droit à N messages par minute (appsettings.json, "RateLimit").
+const string PolitiqueChat = "Chat";
+var requetesParMinute = builder.Configuration.GetValue("RateLimit:RequetesParMinute", 10);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy(PolitiqueChat, contexte =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: contexte.Connection.RemoteIpAddress?.ToString() ?? "inconnue",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = requetesParMinute,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+            }));
+});
+
+// Derrière l'hébergeur (Render), les requêtes passent par un proxy :
+// on lit la vraie IP du visiteur et le protocole (https) dans les en-têtes X-Forwarded-*.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // L'adresse du proxy de l'hébergeur n'est pas connue à l'avance : on fait confiance à l'en-tête.
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// Route /health : l'hébergeur l'appelle pour vérifier que l'API répond.
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -69,8 +106,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseCors(PolitiqueFrontend);
 
+// Après CORS : une réponse 429 garde ses en-têtes CORS, et le front peut l'afficher.
+app.UseRateLimiter();
+
 app.UseAuthorization();
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();
