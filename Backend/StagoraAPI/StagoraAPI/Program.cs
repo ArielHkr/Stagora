@@ -2,6 +2,7 @@
 using OpenAI;
 using StagoraAPI.Models;
 using System.ClientModel;
+using StagoraAPI.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -35,6 +36,7 @@ builder.Services.AddSingleton<IChatClient>(
             new OpenAIClientOptions { Endpoint = new Uri(botOptions.Endpoint) })
         .GetChatClient(botOptions.Model)
         .AsIChatClient());
+builder.Services.AddScoped<BotService>();
 
 var app = builder.Build();
 
